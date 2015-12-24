@@ -25,32 +25,16 @@ public class KNN {
 	public static void main(String[] args) {
 		
 		// 一、输入所有已知点
-		Point point1 = new Point(1, 1.0, 1.1, "A");
-		Point point2 = new Point(2, 1.0, 1.0, "A");
-		Point point3 = new Point(3, 1.0, 1.2, "A");
-		Point point4 = new Point(4, 0, 0, "B");
-		Point point5 = new Point(5, 0, 0.1, "B");
-		Point point6 = new Point(6, 0, 0.2, "B");
-		
+		List<Point> dataList = creatDataSet();
 		// 二、输入未知点
 		Point x = new Point(5, 1.2, 1.2);
-		
 		// 三、计算所有已知点到未知点的欧式距离，并根据距离对所有已知点排序
-		ArrayList<Point> list1 = new ArrayList<Point>();
-		list1.add(point1);
-		list1.add(point2);
-		list1.add(point3);
-		list1.add(point4);
-		list1.add(point5);
-		list1.add(point6);
-		
 		CompareClass compare = new CompareClass();
-		Set<Distance> list3 = new TreeSet<Distance>(compare);
-		for (Point point : list1) {
-			list3.add(new Distance(point.getId(), x.getId(), oudistance(point,
+		Set<Distance> distanceSet = new TreeSet<Distance>(compare);
+		for (Point point : dataList) {
+			distanceSet.add(new Distance(point.getId(), x.getId(), oudistance(point,
 					x)));
 		}
-
 		// 四、选取最近的k个点
 		double k = 5;
 		
@@ -58,8 +42,8 @@ public class KNN {
 		 * 五、计算k个点所在分类出现的频率
 		 */
 		// 1、计算每个分类所包含的点的个数
-		List<Distance> list4 = new ArrayList<Distance>(list3);
-		Map<String, Integer> map = getNumberOfType(list4, list1, k);
+		List<Distance> distanceList= new ArrayList<Distance>(distanceSet);
+		Map<String, Integer> map = getNumberOfType(distanceList, dataList, k);
 		
 		// 2、计算频率
 		Map<String, Double> p = computeP(map, k);
@@ -100,7 +84,7 @@ public class KNN {
 
 	// 计算每个分类包含的点的个数
 	public static Map<String, Integer> getNumberOfType(
-			List<Distance> listDistance, ArrayList<Point> listPoint, double k) {
+			List<Distance> listDistance, List<Point> listPoint, double k) {
 		Map<String, Integer> map = new HashMap<String, Integer>();
 		int i = 0;
 		System.out.println("选取的k个点，由近及远依次为：");
@@ -123,5 +107,25 @@ public class KNN {
 				break;
 		}
 		return map;
+	}
+	
+	public static ArrayList<Point> creatDataSet(){
+		
+		Point point1 = new Point(1, 1.0, 1.1, "A");
+		Point point2 = new Point(2, 1.0, 1.0, "A");
+		Point point3 = new Point(3, 1.0, 1.2, "A");
+		Point point4 = new Point(4, 0, 0, "B");
+		Point point5 = new Point(5, 0, 0.1, "B");
+		Point point6 = new Point(6, 0, 0.2, "B");
+		
+		ArrayList<Point> dataList = new ArrayList<Point>();
+		dataList.add(point1);
+		dataList.add(point2);
+		dataList.add(point3);
+		dataList.add(point4);
+		dataList.add(point5);
+		dataList.add(point6);
+		
+		return dataList;
 	}
 }
