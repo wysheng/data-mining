@@ -43,6 +43,7 @@ public class KNN {
 		list1.add(point4);
 		list1.add(point5);
 		list1.add(point6);
+		
 		CompareClass compare = new CompareClass();
 		Set<Distance> list3 = new TreeSet<Distance>(compare);
 		for (Point point : list1) {
@@ -64,7 +65,7 @@ public class KNN {
 		Map<String, Double> p = computeP(map, k);
 		
 		x.setType(maxP(p));
-		System.out.println(x.getType());
+		System.out.println("未知点的类型为："+x.getType());
 	}
 
 	// 欧式距离计算
@@ -102,6 +103,7 @@ public class KNN {
 			List<Distance> listDistance, ArrayList<Point> listPoint, double k) {
 		Map<String, Integer> map = new HashMap<String, Integer>();
 		int i = 0;
+		System.out.println("选取的k个点，由近及远依次为：");
 		for (Distance distance : listDistance) {
 			System.out.println("id为" + distance.getId() + ",距离为："
 					+ distance.getDisatance());
