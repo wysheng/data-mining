@@ -29,7 +29,7 @@ public class DecisionTree {
 		System.out.println("香农熵为：" + shannonEnt);
 		List<Data> retDataSet = splitDataList(dataList, 1, "0");
 		int t = findBestFeatureToSplit(dataList);
-		System.out.println(t);
+		System.out.println("第一数据集划分特征:"+t);
 	}
 	//分类
 	public static String majorityCnt(ArrayList<String> classList){
