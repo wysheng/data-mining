@@ -28,15 +28,52 @@ public class DecisionTree {
 		// 创建数据集
 		List<Data> dataList = createData();
 		// 香农熵
-		double shannonEnt = computeShannonEnt(dataList);
-		System.out.println("香农熵为：" + shannonEnt);
-		List<Data> retDataSet = splitDataList(dataList, 1, "0");
-		int t = findBestFeatureToSplit(dataList);
-		System.out.println("第一数据集划分特征:"+t);
+//		double shannonEnt = computeShannonEnt(dataList);
+//		System.out.println("香农熵为：" + shannonEnt);
+//		List<Data> retDataSet = splitDataList(dataList, 0, "1");
+//		for(Data data:retDataSet){
+//			System.out.println(data.getId()+","+data.getType());
+//		}
 		ArrayList<String> labels = getLabels();
-		createTree(dataList, labels);
+		createTree1(dataList, labels);
 	}
-	//创建决策树
+	
+	//创建决策树，参数:数据集，特征名集合
+	public static String createTree1(List<Data> dataList,ArrayList<String> labels){
+		//类别因子"yes","no"
+		ArrayList<String> classList = new ArrayList<String>();
+		for(Data data:dataList){
+			classList.add(data.getType());
+		}
+		//类别完全相同则停止划分
+		Set<String> classSet = new HashSet(classList);
+		if(classSet.size()==1){
+			return classList.get(0);
+		}
+		//遍历完所有特征，返回出现次数最多的
+		//最优划分特征的索引位置
+		int bestFeat = findBestFeatureToSplit(dataList);
+		//最优划分特征名
+		String bestFeatLabel = labels.get(bestFeat);
+		
+		String mytree = "";
+		//删除最优划分特征名
+		labels.remove(bestFeatLabel);
+		ArrayList<String> featValues = new ArrayList<String>();
+		//将数据集中所有数据的最优特征名对应的特征值保存到featValues中
+		for(Data data:dataList){
+			featValues.add(data.getFeature().get(bestFeat));
+		}
+		//不重复的特征值
+		Set<String> uniqueVals = new HashSet(featValues);
+		ArrayList<String> subLabels  = null;
+		for(String value:uniqueVals){
+			subLabels = labels;
+			mytree += createTree(splitDataList(dataList, bestFeat, value), subLabels);
+		}
+		
+		return mytree;
+	}
 	public static String createTree(List<Data> dataList,ArrayList<String> labels){
 		ArrayList<String> classList = new ArrayList<String>();
 		for(Data data:dataList){
@@ -47,12 +84,11 @@ public class DecisionTree {
 		if(classSet.size()==1){
 			return classList.get(0);
 		}
-		if(dataList.size()==1)
+		if(dataList.size()==1){
 			return majorityCnt(classList);
+		}
 		int bestFeat = findBestFeatureToSplit(dataList);
 		String bestFeatLabel = labels.get(bestFeat);
-	//	TreeNode root = new TreeNode(bestFeatLabel);
-   //		Object[][] tree = {bestFeatLabel[],{}};
 		String str1=null;
 		labels.remove(bestFeatLabel);
 		ArrayList<String> featValues = new ArrayList<String>();
@@ -62,14 +98,21 @@ public class DecisionTree {
 		Set<String> uniqueVals = new HashSet(featValues);
 		for(String str:uniqueVals){
 			ArrayList<String> subLabels = labels;
-		//	root.setLeftNode(leftNode);
+			if(!subLabels.isEmpty()){
+				//split第三个参数为特征值
 			 str1 = createTree(splitDataList(dataList, bestFeat, str), subLabels);
+			 System.out.println(str1);
+			 }else{
+				 break;
+			 }
 		}
+		System.out.println(str1);
 		return str1;
 		
 		
 	}
-	//返回每一项特征中出现次数最多的类别值
+	
+	//返回每一项特征中出现次数最多的类别因子
 	public static String majorityCnt(ArrayList<String> classList){
 		HashMap<String,Integer> classCount = new HashMap<String,Integer>();
 		for(String vote:classList){
@@ -80,12 +123,19 @@ public class DecisionTree {
 		}
 		return maxP(classCount);
 	}
+	
 	// 选择最优数据集划分特征
 	public static int findBestFeatureToSplit(List<Data> dataList) {
+		//特征值数量
 		int numFeatures = dataList.get(0).getFeature().size()-1;
+		//香农熵
 		double baseEntroy = computeShannonEnt(dataList);
+		//信息增益
 		double bestInfoGain = 0.0;
+		//最优特征值
 		int bestFeature = -1;
+		
+		//特征值 
 		ArrayList<String> featList = new ArrayList<String>();
 		ArrayList<Data> subDataSet = null;
 		for (int i = 0; i < numFeatures; i++) {
@@ -111,7 +161,7 @@ public class DecisionTree {
 		return bestFeature;
 	}
 
-	// 数据集划分
+	// 数据集划分,dataList待划分数据集,axis划分数据集的特征，特征返回值
 	public static ArrayList<Data> splitDataList(List<Data> dataList, int axis,
 			String value) {
 		ArrayList<Data> retDataSet = new ArrayList<Data>();
@@ -144,7 +194,7 @@ public class DecisionTree {
 		return shannonEnt;
 	}
 
-	// 创建数据集
+	// 1、创建数据集
 	public static ArrayList<Data> createData() {
 		ArrayList<Data> dataList = new ArrayList<Data>();
 		HashMap<Integer, String> map1 = new HashMap<Integer, String>();
@@ -179,7 +229,7 @@ public class DecisionTree {
 		return dataList;
 	}
 
-	// 获取所有特征标签值
+	// 获取所有特征名
 	public static String[][] getLabelsValue(
 			List<Data> dataList) {
 		int featureNumber = dataList.get(0).getFeature().size();
@@ -191,29 +241,22 @@ public class DecisionTree {
 			labels[i][j] = dataList.get(j).getFeature().get(i);
 		}
 		
-//		HashMap<Integer, ArrayList<String>> labels = new HashMap<Integer, ArrayList<String>>();
-//		for (int i = 0; i < 2; i++) {
-//			ArrayList<String> oneLabels = new ArrayList<String>();
-//			for (Data data : dataList) {
-//				oneLabels.add(data.getFeature().get(i));
-//				labels.put(i, oneLabels);
-//			}
-//			oneLabels.clear();
-//		}
-
 		return labels;
 	}
-	// 获取所有特征标签
+	
+	// 获取所有特征名
 	public static ArrayList<String> getLabels(){
 		ArrayList<String> labels = new ArrayList<String>();
 		labels.add("no surfacing");
 		labels.add("flippers");
 		return labels;
 	}
+	
 	// 计算以base的value的对数
 	public static double computeLog(double value, double base) {
 		return Math.log(value) / Math.log(base);
 	}
+	
 	// 找出出现频率最大的特征
 	public static String maxP(Map<String,Integer> map) {
 		String key = null;
