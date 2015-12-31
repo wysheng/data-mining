@@ -1,25 +1,38 @@
 package decisiontree;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
- * 决策树
+ * 决策树ID3
  * 
- * 1、创建数据集
- * 2、计算香农熵或信息增益 
- * 3、通过计算选择最优数据集划分特征
- * 4、通过最优数据划分特征来划分数据集，创建决策树
+ * 1、创建数据集 2、计算香农熵或信息增益 3、通过计算选择最优数据集划分特征 4、通过最优数据划分特征来划分数据集，创建决策树
  * 
  * 
  * @author fzj
  * 
  */
 public class DecisionTree {
+
+	public static TreeNode root = null;
+
+	private ArrayList<String> attribute = new ArrayList<String>(); // 存储属性的名称
+	
+	private ArrayList<ArrayList<String>> attributevalue = new ArrayList<ArrayList<String>>(); // 存储每个属性的取值
+	
+	private ArrayList<String[]> data = new ArrayList<String[]>();; // 原始数据
+
+	private static final String patternString = "@attribute(.*)[{](.*?)[}]";
 
 	public static void main(String[] args) {
 
@@ -28,6 +41,42 @@ public class DecisionTree {
 		String tree = createTree1(dataList, labels);
 		System.out.println(tree);
 
+	}
+
+	// 读取arff文件
+	public void readARFF(File file) {
+		try {
+			FileReader fr = new FileReader(file);
+			// 处理文本输入
+			BufferedReader br = new BufferedReader(fr);
+			String line;
+			Pattern pattern = Pattern.compile(patternString);
+			while ((line = br.readLine()) != null) {
+				Matcher matcher = pattern.matcher(line);
+				if (matcher.find()) {
+					attribute.add(matcher.group(1).trim());
+					String[] values = matcher.group(2).split(",");
+					ArrayList<String> al = new ArrayList<String>(values.length);
+					for (String value : values) {
+						al.add(value);
+					}
+					attributevalue.add(al);
+				}else if(line.startsWith("@data")){
+					while ((line = br.readLine()) != null) {
+                        if(line=="")
+                            continue;
+                        String[] row = line.split(",");
+                        data.add(row);
+                    }
+				}else{
+					 continue;
+				}
+
+			}
+			br.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	// 创建决策树，参数:数据集，特征名集合
@@ -46,13 +95,14 @@ public class DecisionTree {
 		}
 		// 遍历完所有特征，返回出现次数最多的
 		if (dataList.size() == 1) {
-			System.out.println(majorityCnt(classList));
+			System.out.println("majorityCnt" + majorityCnt(classList));
 			return majorityCnt(classList);
 		}
 		// 最优划分特征的索引位置
 		int bestFeat = findBestFeatureToSplit(dataList);
 		// 最优划分特征名
 		String bestFeatLabel = labels.get(bestFeat);
+
 		System.out.println(bestFeatLabel);
 
 		String mytree = "";
@@ -66,17 +116,15 @@ public class DecisionTree {
 		ArrayList<Data> retDataSet = null;
 		// 不重复的特征值
 		Set<String> uniqueVals = new HashSet(featValues);
-		HashMap<Integer,String> subLabels  = null;
+		HashMap<Integer, String> subLabels = null;
 		if (uniqueVals != null) {
 			for (String value : uniqueVals) {
 				subLabels = labels;
 				System.out.println(value);
-				
-				mytree =createTree1(splitDataList(dataList, bestFeat, value),
+				mytree = createTree1(splitDataList(dataList, bestFeat, value),
 						subLabels);
 			}
 		}
-
 		return mytree;
 	}
 
@@ -211,7 +259,6 @@ public class DecisionTree {
 
 		return labels;
 	}
-
 
 	// 获取所有特征名
 	public static HashMap<Integer, String> getLabels() {
