@@ -2,16 +2,28 @@ package decisiontree;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.management.modelmbean.XMLParseException;
+
+import org.dom4j.Document;
+import org.dom4j.DocumentHelper;
+import org.dom4j.Element;
+import org.dom4j.io.OutputFormat;
+import org.dom4j.io.XMLWriter;
+import org.omg.CORBA_2_3.portable.OutputStream;
 
 /**
  * 决策树ID3
@@ -26,28 +38,49 @@ public class DecisionTree {
 
 	public static TreeNode root = null;
 
-	private ArrayList<String> attribute = new ArrayList<String>(); // 存储属性的名称
+	private  ArrayList<String> attribute = new ArrayList<String>(); // 存储属性的名称
 	
-	private ArrayList<ArrayList<String>> attributevalue = new ArrayList<ArrayList<String>>(); // 存储每个属性的取值
+	private  ArrayList<ArrayList<String>> attributevalue = new ArrayList<ArrayList<String>>(); // 存储每个属性的取值
 	
-	private ArrayList<String[]> data = new ArrayList<String[]>();; // 原始数据
+	private  static ArrayList<String[]> data = new ArrayList<String[]>();; // 原始数据
 
-	private static final String patternString = "@attribute(.*)[{](.*?)[}]";
-
-	public static void main(String[] args) {
-
-		List<Data> dataList = createData();
-		HashMap<Integer, String> labels = getLabels();
-		String tree = createTree1(dataList, labels);
-		System.out.println(tree);
-
+	private  final String patternString = "@attribute(.*)[{](.*?)[}]";
+	
+	Document xmldoc;
+	Element root1;
+	
+	public DecisionTree(){
+		xmldoc = DocumentHelper.createDocument();
+		root1 = xmldoc.addElement("root");
+		root1.addElement("DecisionTree").addAttribute("value", "null");
 	}
+	
+	public static void main(String[] args) throws FileNotFoundException {
 
+//		List<Data> dataList = createData();
+//		HashMap<Integer, String> labels = getLabels();
+//		String tree = createTree1(dataList, labels);
+//		System.out.println(tree);
+		DecisionTree at = new DecisionTree();
+//		DecisionTree dt = new DecisionTree();
+//		dt.read();
+		at.readARFF(new File(
+				"C:/Users/fzj/Workspaces/MyEclipse Professional 2014/DataMining/src/decisiontree/animal.arff"));
+//		at.writeXML("dt.xml");
+		LinkedList<Integer> ll = new LinkedList<Integer>();
+		for(int i = 0;i<at.attribute.size();i++){
+			ll.add(i);
+		}
+		ArrayList<Integer> al = new ArrayList<Integer>();
+		for(int i = 0;i<at.data.size();i++){
+			al.add(i);
+		}
+	}
+	
 	// 读取arff文件
 	public void readARFF(File file) {
 		try {
 			FileReader fr = new FileReader(file);
-			// 处理文本输入
 			BufferedReader br = new BufferedReader(fr);
 			String line;
 			Pattern pattern = Pattern.compile(patternString);
@@ -61,7 +94,7 @@ public class DecisionTree {
 						al.add(value);
 					}
 					attributevalue.add(al);
-				}else if(line.startsWith("@data")){
+				}else if(line.startsWith("\t@data")){
 					while ((line = br.readLine()) != null) {
                         if(line=="")
                             continue;
@@ -71,14 +104,12 @@ public class DecisionTree {
 				}else{
 					 continue;
 				}
-
 			}
 			br.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
-
 	// 创建决策树，参数:数据集，特征名集合
 	public static String createTree1(List<Data> dataList,
 			HashMap<Integer, String> labels) {
@@ -127,6 +158,7 @@ public class DecisionTree {
 		}
 		return mytree;
 	}
+	//
 
 	// 返回每一项特征中出现次数最多的类别因子
 	public static String majorityCnt(ArrayList<String> classList) {
@@ -259,7 +291,19 @@ public class DecisionTree {
 
 		return labels;
 	}
-
+	//计算熵
+	public double getEntropy(int[] arr) {
+		double entropy = 0.0;
+		int sum = 0;
+		for(int i = 0;i<arr.length;i++){
+			entropy -= arr[i] * Math.log(arr[i]+Double.MIN_VALUE)/Math.log(2);
+			sum += arr[i];
+		}
+		entropy += sum * Math.log(sum+Double.MIN_VALUE)/Math.log(2);
+		entropy /= sum;
+		return entropy;
+	}
+	
 	// 获取所有特征名
 	public static HashMap<Integer, String> getLabels() {
 		HashMap<Integer, String> labels = new HashMap<Integer, String>();
@@ -267,7 +311,7 @@ public class DecisionTree {
 		labels.put(1, "flippers");
 		return labels;
 	}
-
+	
 	// 计算以base的value的对数
 	public static double computeLog(double value, double base) {
 		return Math.log(value) / Math.log(base);
@@ -284,5 +328,22 @@ public class DecisionTree {
 			}
 		}
 		return key;
+	}
+	
+	//xml写入文件
+	public void writeXML(String fileName){
+		try {
+			File file = new File(fileName);
+			if(!file.exists()){
+				file.createNewFile();
+			}
+			FileWriter fw = new FileWriter(file);
+			OutputFormat of = OutputFormat.createPrettyPrint();
+			XMLWriter output = new XMLWriter(fw,of);
+			output.write(xmldoc);
+			output.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 }

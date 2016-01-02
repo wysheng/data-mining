@@ -69,7 +69,7 @@ public class ID3 {
                         al.add(value.trim());
                     }
                     attributevalue.add(al);
-                } else if (line.startsWith("@data")) {
+                }else if(line.startsWith("\t@data")){
                     while ((line = br.readLine()) != null) {
                         if(line=="")
                             continue;
