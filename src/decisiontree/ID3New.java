@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -32,7 +33,11 @@ public class ID3New {
 		int n = attribute.indexOf(name);
 		setDec(n);
 	}
-
+	//构建决策树
+	public void buildDT(String name, String value, ArrayList<Integer> subset,
+            LinkedList<Integer> selatt){
+		
+	}
 	// 计算熵
 	public double getEntropy(int[] arr) {
 		double entropy = 0.0;
@@ -46,7 +51,10 @@ public class ID3New {
 		entropy /= sum;
 		return entropy;
 	}
-	
+	//计算信息熵
+	 public double calNodeEntropy(ArrayList<Integer> subset, int index) {
+		 return 2+Double.MIN_VALUE;
+	 }
 	//判断类别是否相同
 	public boolean infoPure(ArrayList<Integer> subSet){
 
