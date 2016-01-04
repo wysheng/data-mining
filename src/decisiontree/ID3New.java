@@ -3,11 +3,18 @@ package decisiontree;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.dom4j.Document;
+import org.dom4j.DocumentHelper;
+import org.dom4j.Element;
+import org.dom4j.io.OutputFormat;
+import org.dom4j.io.XMLWriter;
 
 public class ID3New {
 
@@ -15,11 +22,21 @@ public class ID3New {
 
 	private ArrayList<ArrayList<String>> attributevalue = new ArrayList<ArrayList<String>>(); // 存储每个属性的取值
 
-	private static ArrayList<String[]> data = new ArrayList<String[]>();; // 原始数据
+	private ArrayList<String[]> data = new ArrayList<String[]>();; // 原始数据
 	
 	int decatt; // 决策变量在属性集中的索引
 
 	private final String patternString = "@attribute(.*)[{](.*?)[}]";
+	
+	
+	Document xmldoc;
+	Element root1;
+	
+	public ID3New(){
+		xmldoc = DocumentHelper.createDocument();
+		root1 = xmldoc.addElement("root");
+		root1.addElement("DecisionTree").addAttribute("value", "null");
+	}
 	
 	//设置决策变量
 	public void setDec(int n){
@@ -33,11 +50,13 @@ public class ID3New {
 		int n = attribute.indexOf(name);
 		setDec(n);
 	}
+	
 	//构建决策树
 	public void buildDT(String name, String value, ArrayList<Integer> subset,
             LinkedList<Integer> selatt){
 		
 	}
+	
 	// 计算熵
 	public double getEntropy(int[] arr) {
 		double entropy = 0.0;
@@ -51,10 +70,12 @@ public class ID3New {
 		entropy /= sum;
 		return entropy;
 	}
+	
 	//计算信息熵
 	 public double calNodeEntropy(ArrayList<Integer> subset, int index) {
 		 return 2+Double.MIN_VALUE;
 	 }
+	 
 	//判断类别是否相同
 	public boolean infoPure(ArrayList<Integer> subSet){
 
@@ -111,4 +132,20 @@ public class ID3New {
 			e.printStackTrace();
 		}
 	}
+	
+	// 把xml写入文件
+    public void writeXML(String filename) {
+        try {
+            File file = new File(filename);
+            if (!file.exists())
+                file.createNewFile();
+            FileWriter fw = new FileWriter(file);
+            OutputFormat format = OutputFormat.createPrettyPrint(); // 美化格式
+            XMLWriter output = new XMLWriter(fw, format);
+            output.write(xmldoc);
+            output.close();
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+        }
+    }
 }
