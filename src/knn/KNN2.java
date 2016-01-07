@@ -14,10 +14,21 @@ public class KNN2 {
 
 	private ArrayList<String> attribute = new ArrayList<String>(); // 存储属性的名称
 	private ArrayList<ArrayList<String>> attributevalue = new ArrayList<ArrayList<String>>(); // 存储每个属性的取值
-	private ArrayList<String[]> data = new ArrayList<String[]>();; // 原始数据
+	private static ArrayList<String[]> data = new ArrayList<String[]>();; // 原始数据
 	int decatt; // 决策变量在属性集中的索引
 	public static final String patternString = "@attribute(.*)[{](.*?)[}]";
 
+	public static void main(String[] args) {
+		KNN2 knn = new KNN2();
+		knn.readARFF(new File("C:/Users/fzj/Workspaces/MyEclipse Professional 2014/DataMining/src/knn/point.arff"));
+		for(String[] raw:data){
+			for(int i = 0;i<raw.length;i++){
+				System.out.print(raw[i]+",");
+			}
+			System.out.println();
+		}
+	}
+	
 	// 读取arff文件，给attribute、attributevalue、data赋值
 	public void readARFF(File file) {
 		try {
@@ -51,26 +62,46 @@ public class KNN2 {
 			e1.printStackTrace();
 		}
 	}
-
+	
+	//设置决策变量
+		public void setDec(int n){
+			if(n < 0 || n >= attribute.size()){
+				System.out.println("决策变量错误");
+			}
+			decatt = n;
+		}
+		
+		public void setDec(String name){
+			int n = attribute.indexOf(name);
+			setDec(n);
+		}
+	
 	// 欧式距离计算
-	public static double oudistance(Point point1, Point point2) {
-		double temp = Math.pow(point1.getX() - point2.getX(), 2)
-				+ Math.pow(point1.getY() - point2.getY(), 2);
-		return Math.sqrt(temp);
+	public static double oudistance(double[] point1, double[] point2) {
+		double temp = 0;
+		if(point1.length==point2.length){
+			for(int i = 0;i<point1.length;i++){
+				 temp += Math.pow(point1[i]-point2[i], 2);
+			}
+			return Math.sqrt(temp);
+		}else{
+			System.out.println("参数个数不相同");
+			return 0.0;
+		}
 	}
 
 	// 找出最大频率
-	public static String maxP(Map<String, Double> map) {
-		String key = null;
-		double value = 0.0;
-		for (Map.Entry<String, Double> entry : map.entrySet()) {
-			if (entry.getValue() > value) {
-				key = entry.getKey();
-				value = entry.getValue();
-			}
+	public static String maxP(String[] type) {
+		Map<String, Integer> p = new HashMap<String, Integer>();
+		for(int i = 0;i<type.length;i++){
+			if(!p.containsKey(type[i]))
+				p.put(type[i], 0);
+			else
+				p.put(type[i],p.get(type[i]+1));
 		}
-		return key;
+		return type[0];
 	}
+	
 
 	// 计算频率
 	public static Map<String, Double> computeP(Map<String, Integer> map,
