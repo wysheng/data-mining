@@ -1,6 +1,9 @@
-# DataMining
-Algorithm for data mining(数据挖掘算法练习)
-###I KNN(k-NearestNeighbor)
-###II Decision Tree
+# Machine Learning
 
-bayes
+- k近邻（KNN）
+- 决策树
+- 朴素贝叶斯
+- 支持向量机（SVM）
+- Logistic回归
+- 线性回归
+- k-means
